@@ -85,4 +85,12 @@ public class InputManager : MonoBehaviour
             usingGyro = true;
         }
     }
+
+    public void SetJoystickInput(Vector2 input)
+    {
+        if (usingJoystick)
+        {
+            moveInput = input;
+        }
+    }
 }
