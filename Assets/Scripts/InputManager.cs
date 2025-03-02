@@ -5,10 +5,14 @@ public class InputManager : MonoBehaviour
     public static InputManager instance;
 
     [HideInInspector] public Vector2 moveInput;
+    [HideInInspector] public Vector2 joystickInput;
 
     private bool usingKeyboard = true;
     private bool usingJoystick = false;
     private bool usingGyro = false;
+
+    public float gyroSensitivity = 2.0f;
+    private bool gyroInitialized = false;
 
     void Awake()
     {
@@ -22,18 +26,30 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        // проверяем есть ли гироскоп
+        if (SystemInfo.supportsGyroscope)
+        {
+            Input.gyro.enabled = true;
+            gyroInitialized = true;
+        }
+    }
+
     void Update()
     {
-        // только один метод ввода активен одновременно
+        // проверяем какой метод ввода используется сейчас
         if (usingKeyboard)
         {
             GetKeyboardInput();
         }
         else if (usingJoystick)
         {
+            GetJoystickInput();
         }
         else if (usingGyro)
         {
+            GetGyroInput();
         }
     }
 
@@ -66,6 +82,27 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    void GetJoystickInput()
+    {
+        moveInput = joystickInput;
+    }
+
+    void GetGyroInput()
+    {
+        if (!gyroInitialized)
+            return;
+
+        // получаем наклон устройства
+        float x = Input.gyro.attitude.x * gyroSensitivity;
+        float y = Input.gyro.attitude.y * gyroSensitivity;
+
+        // ограничиваем значения
+        x = Mathf.Clamp(x, -1f, 1f);
+        y = Mathf.Clamp(y, -1f, 1f);
+
+        moveInput = new Vector2(x, y);
+    }
+
     public void SetControlMethod(string method)
     {
         usingKeyboard = false;
@@ -83,14 +120,6 @@ public class InputManager : MonoBehaviour
         else if (method == "gyro")
         {
             usingGyro = true;
-        }
-    }
-
-    public void SetJoystickInput(Vector2 input)
-    {
-        if (usingJoystick)
-        {
-            moveInput = input;
         }
     }
 }

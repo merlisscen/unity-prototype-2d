@@ -7,11 +7,9 @@ public class VirtualJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler,
     public RectTransform background;
     public RectTransform handle;
 
-    private Vector2 input;
-
     public void OnDrag(PointerEventData eventData)
     {
-        // простой расчет позиции
+        // находим позицию касания
         Vector2 pos;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             background,
@@ -19,32 +17,33 @@ public class VirtualJoystick : MonoBehaviour, IDragHandler, IPointerDownHandler,
             eventData.pressEventCamera,
             out pos);
 
-        // находим направление
-        input = pos / (background.sizeDelta.x / 2);
+        // считаем направление (-1 до 1)
+        Vector2 direction = pos / (background.sizeDelta.x / 2);
 
-        // чтобы не двигался слишком быстро по диагонали
-        if (input.magnitude > 1)
-            input = input.normalized;
+        // ограничиваем длину
+        if (direction.magnitude > 1)
+            direction = direction.normalized;
 
-        // двигаем ручку джойстика
-        handle.anchoredPosition = input * (background.sizeDelta.x / 2) * 0.8f;
+        // двигаем ручку
+        handle.anchoredPosition = direction * (background.sizeDelta.x / 2) * 0.8f;
 
-        // передаем в систему ввода
-        InputManager.instance.moveInput = input;
+        // передаем в менеджер
+        if (InputManager.instance != null)
+            InputManager.instance.joystickInput = direction;
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        // при нажатии сразу обрабатываем позицию
-        OnDrag(eventData);
         InputManager.instance.SetControlMethod("joystick");
+        OnDrag(eventData);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        // при отпускании сбрасываем всё
-        input = Vector2.zero;
+        // сбрасываем все
         handle.anchoredPosition = Vector2.zero;
-        InputManager.instance.moveInput = Vector2.zero;
+
+        if (InputManager.instance != null)
+            InputManager.instance.joystickInput = Vector2.zero;
     }
 }
