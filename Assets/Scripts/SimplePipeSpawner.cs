@@ -3,7 +3,7 @@ using UnityEngine;
 public class SimplePipeSpawner : MonoBehaviour
 {
     public GameObject pipePrefab;
-    public float spawnInterval = 2f;
+    public float spawnInterval = 3f;
     public float minY = -3f;
     public float maxY = 3f;
 
@@ -22,13 +22,22 @@ public class SimplePipeSpawner : MonoBehaviour
 
     void SpawnPipe()
     {
-        // определяем случайную высоту для проема
+        float rightEdge = Camera.main.ViewportToWorldPoint(new Vector3(1.1f, 0, 0)).x;
+
         float randomY = Random.Range(minY, maxY);
 
-        // создаем трубу справа от экрана
-        Vector3 spawnPosition = new Vector3(10f, randomY, 0f);
-        Instantiate(pipePrefab, spawnPosition, Quaternion.identity);
+        Vector3 spawnPosition = new Vector3(rightEdge, randomY, 0f);
+        GameObject newPipe = Instantiate(pipePrefab, spawnPosition, Quaternion.identity);
 
-        Debug.Log("Создана новая труба на позиции: " + spawnPosition);
+        if (newPipe.GetComponent<PipeMovement>() == null)
+        {
+            newPipe.AddComponent<PipeMovement>();
+        }
+
+        Rigidbody2D rb = newPipe.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            Destroy(rb);
+        }
     }
 }
