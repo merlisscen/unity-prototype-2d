@@ -31,7 +31,7 @@ public class LevelElement : MonoBehaviour
                     break;
 
                 case ElementType.Speed:
-                    StartSpeedBoost(other.gameObject, duration);
+                    other.GetComponent<PlayerController>().BoostSpeed(duration);
                     break;
 
                 case ElementType.Health:
